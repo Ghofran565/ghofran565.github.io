@@ -15,8 +15,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install  # Or yarn/pnpm if you use those
-      - run: npx nuxt build --preset github_pages
+      - run: pnpm install  # Or yarn/pnpm if you use those
+      - run: pnpx nuxt build --preset github_pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
