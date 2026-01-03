@@ -70,6 +70,30 @@
 		success: false,
 	});
 
+	const roles = ref([
+		{
+			name: 'Developer Bita-tech',
+			gradients: ['#cc0000', '#800000'],
+			tooltip: '',
+			link: 'https://bita-tech.ir',
+			target: '_blank',
+		},
+		{
+			name: 'Phoniux Helper',
+			gradients: ['#ff471a', '#991f00'],
+			tooltip: '',
+			link: 'https://discord.phoenixclient.ir/',
+			target: '_blank',
+		},
+		{
+			name: 'Media.O Gameup',
+			gradients: ['#0099ff', '#005c99'],
+			tooltip: '',
+			link: '',
+			target: '',
+		},
+	]);
+
 	// برای ذخیره تایم‌استمپ‌های آخرین دریافتی از API
 	const localTimestamps = reactive({
 		activities: {} as Record<string, { start?: number; end?: number }>,
@@ -117,7 +141,7 @@
 	onMounted(() => {
 		if (process.client) {
 			fetchDiscordData(); // Initial fetch
-			const interval = setInterval(fetchDiscordData, 7000); 
+			const interval = setInterval(fetchDiscordData, 7000);
 			onUnmounted(() => clearInterval(interval));
 		}
 	});
@@ -381,8 +405,8 @@
 
 <template>
 	<div class="w-full max-w-md min-w-20">
-		<UCard
-			class="relative bg-black border border-black/2 shadow-xl rounded-3xl overflow-hidden flex flex-col"
+		<UPageCard
+			class="relative bg-black shadow-xl rounded-3xl overflow-hidden flex flex-col"
 			:ui="{ body: { base: 'p-6 flex-1 flex flex-col' } }"
 		>
 			<!-- Skeleton Loader فقط برای لود اولیه -->
@@ -390,12 +414,12 @@
 				v-if="isInitialLoading"
 				class="absolute inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center"
 			>
-				<div class="flex flex-col items-center gap-4">
-					<div class="w-20 h-20 rounded-full bg-white/10 animate-pulse"></div>
-					<div class="space-y-3 w-64 flex-1 flex flex-col">
-						<!-- <div class="h-6 bg-white/10 rounded animate-pulse"></div>
-						<div class="h-4 bg-white/10 rounded w-40 animate-pulse"></div>
-						<div class="h-16 bg-white/10 rounded animate-pulse"></div> -->
+				<div class="flex items-center gap-4">
+					<USkeleton class="h-12 w-12 rounded-full" />
+
+					<div class="grid gap-2">
+						<USkeleton class="h-4 w-[250px]" />
+						<USkeleton class="h-4 w-[200px]" />
 					</div>
 				</div>
 			</div>
@@ -427,7 +451,7 @@
 				class="flex flex-col flex-1"
 			>
 				<!-- بقیه تمپلیت همانند قبل بدون تغییر -->
-				<div class="flex items-center gap-4" :class="hasAnyActivity ? 'pb-6' : ''">
+				<div class="flex items-center gap-4">
 					<ULink
 						to="https://discord.gg/9ngaRvjGBp"
 						target="_blank"
@@ -486,214 +510,330 @@
 
 				<div
 					v-if="customStatus"
-					class="relative"
+					class="relative pt-2 pb-2"
 				>
-					<div class="flex items-center gap-2 mb-1">
+					<div class="flex items-center gap-2">
 						<UIcon
 							name="i-lucide-message-circle"
 							class="-mr-1 w-4 h-4 text-green-500"
 						/>
-						<p class="text-xs text-muted">Status</p>
-					</div>
-
-					<div class="relative border border-white/10 rounded-lg p-2">
-						<div
-							class="flex items-center gap-1 text-sm font-medium text-white truncate"
-						>
-							<span
-								v-if="customStatusEmoji?.type === 'unicode'"
-								class="text-base leading-none"
+						<p class="text-sm text-muted">Status:</p>
+						<div>
+							<div
+								class="flex items-center gap-1 text-sm font-medium text-white truncate"
 							>
-								{{ customStatusEmoji.value }}
-							</span>
+								<p class="text-lg text-muted">﹤</p>
+								<span
+									v-if="customStatusEmoji?.type === 'unicode'"
+									class="text-base leading-none"
+								>
+									{{ customStatusEmoji.value }}
+								</span>
 
-							<img
-								v-else-if="customStatusEmoji?.type === 'custom'"
-								:src="customStatusEmoji.value"
-								alt=""
-								class="w-4 h-4"
-								loading="eager"
+								<img
+									v-else-if="customStatusEmoji?.type === 'custom'"
+									:src="customStatusEmoji.value"
+									alt=""
+									class="w-4 h-4"
+									loading="eager"
+								/>
+
+								<span class="truncate">
+									{{ customStatus.state }}
+								</span>
+								<p class="text-lg text-muted">﹥</p>
+							</div>
+						</div>
+					</div>
+				</div>
+				<hr class="border-white/10 my-1" />
+				<!-- Roles -->
+				<div
+					v-if="roles.length"
+					class="mt-2 flex flex-wrap gap-2"
+				>
+					<ULink
+						v-for="role in roles"
+						:key="role.name"
+						:to="role.link"
+						:target="role.target"
+						class="role-badge group"
+						:title="role.tooltip"
+						:style="{
+							'--g1': role.gradients[0],
+							'--g2': role.gradients[1],
+						}"
+					>
+						<span
+							class="role-name"
+							:data-text="role.name"
+						>
+							{{ role.name }}
+						</span>
+					</ULink>
+				</div>
+
+			</div>
+		</UPageCard>
+		<UPageCard
+			class="relative mt-5 bg-black shadow-xl rounded-3xl flex flex-col"
+			:ui="{ body: { base: 'p-6 flex-1 flex flex-col' } }"
+			v-if="
+				(hasAnyActivity || discordData.data.listening_to_spotify) &&
+				discordData.data.discord_status !== 'offline'
+			"
+		>
+			<div class="flex flex-col gap-4">
+				<!-- <div>
+
+					<TextBubble
+					:speed="0.05"
+					:amplitude="0.25"
+					:isCode="true"
+					:isSong="false"
+					:isGame="false"
+				/>
+				<hr class="border-white/10 my-1" />
+			</div> -->
+				<div
+					v-if="primaryActivity"
+					class="flex items-center gap-3 p-3 rounded-2xl bg-white/3"
+				>
+				
+					<div class="relative shrink-0 w-16 h-16">
+						<!-- Large image as background -->
+						<img
+							v-if="getAssetUrl(primaryActivity, 'large')"
+							:src="getAssetUrl(primaryActivity, 'large')"
+							:alt="primaryActivity.assets?.large_text || primaryActivity.name"
+							class="w-full h-full rounded-md object-cover"
+							loading="eager"
+						/>
+
+						<!-- Small image overlaid in the bottom-right corner, full circle -->
+						<img
+							v-if="getAssetUrl(primaryActivity, 'small')"
+							:src="getAssetUrl(primaryActivity, 'small')"
+							:alt="primaryActivity.assets?.small_text || primaryActivity.name"
+							class="absolute bottom-0 right-0 w-6 h-6 rounded-full border-background object-cover"
+							loading="eager"
+						/>
+
+						<!-- Fallback icon if no images -->
+						<UIcon
+							v-if="
+								!getAssetUrl(primaryActivity, 'large') &&
+								!getAssetUrl(primaryActivity, 'small')
+							"
+							:name="activityIcon(primaryActivity)"
+							class="w-16 h-16 text-muted"
+						/>
+					</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-1">
+							<UIcon
+								:name="activityTypeConfig(primaryActivity).icon"
+								class="-mr-1 w-4 h-4 text-green-500"
 							/>
-
-							<span class="truncate">
-								{{ customStatus.state }}
-							</span>
+							<p class="text-xs text-muted">
+								{{ activityTypeConfig(primaryActivity).text }}
+							</p>
+						</div>
+						<div class="bg-white/5 border border-white/10 rounded-md p-2">
+							<p class="text-sm font-medium text-white">
+								{{ primaryActivity.name }}
+							</p>
+							<p
+								v-if="primaryActivity.details"
+								class="text-xs text-muted"
+							>
+								{{ primaryActivity.details }}
+							</p>
+							<p
+								v-if="primaryActivity.state"
+								class="text-xs text-muted"
+							>
+								{{ primaryActivity.state }}
+							</p>
+							<p
+								v-if="primaryActivity?.timestamps?.start"
+								class="text-[11px] text-muted mt-1"
+							>
+								{{ activityElapsed(primaryActivity) }} elapsed
+							</p>
 						</div>
 					</div>
 				</div>
 
-				<hr
+				<div
 					v-if="
-						(hasAnyActivity || discordData.data.listening_to_spotify) &&
-						discordData.data.discord_status !== 'offline'
+						discordData.data.listening_to_spotify && discordData.data.spotify
 					"
-					class="border-white/10 my-2"
-				/>
-
-				<div class="flex flex-col gap-4">
-					<div
-						v-if="primaryActivity"
-						class="flex items-center gap-3 p-3 rounded-2xl bg-white/3"
-					>
-						<div class="relative shrink-0">
-							<img
-								v-if="getAssetUrl(primaryActivity, 'large')"
-								:src="getAssetUrl(primaryActivity, 'large')"
-								:alt="
-									primaryActivity.assets?.large_text || primaryActivity.name
-								"
-								class="w-16 h-16 rounded-md"
-								loading="eager"
-							/>
-							<UIcon
-								v-else
-								:name="activityIcon(primaryActivity)"
-								class="w-16 h-16 text-muted"
-							/>
-						</div>
+				>
+					<div class="flex items-center gap-3 p-3 rounded-2xl bg-white/3">
+						<img
+							:src="discordData.data.spotify.album_art_url"
+							alt="Album art"
+							class="w-16 h-16 rounded-md"
+							loading="eager"
+						/>
 						<div class="flex-1">
 							<div class="flex items-center gap-2 mb-1">
 								<UIcon
-									:name="activityTypeConfig(primaryActivity).icon"
+									name="i-lucide-music"
 									class="-mr-1 w-4 h-4 text-green-500"
 								/>
-								<p class="text-xs text-muted">
-									{{ activityTypeConfig(primaryActivity).text }}
-								</p>
+								<p class="text-xs text-muted">Listening on Spotify</p>
 							</div>
 							<div class="bg-white/5 border border-white/10 rounded-md p-2">
 								<p class="text-sm font-medium text-white">
-									{{ primaryActivity.name }}
+									{{ discordData.data.spotify.song }}
 								</p>
-								<p
-									v-if="primaryActivity.details"
-									class="text-xs text-muted"
+								<p class="text-xs text-muted">
+									by {{ discordData.data.spotify.artist }}
+								</p>
+								<div
+									v-if="spotifyProgress"
+									class="mt-2"
 								>
-									{{ primaryActivity.details }}
-								</p>
-								<p
-									v-if="primaryActivity.state"
-									class="text-xs text-muted"
-								>
-									{{ primaryActivity.state }}
-								</p>
-								<p
-									v-if="primaryActivity?.timestamps?.start"
-									class="text-[11px] text-muted mt-1"
-								>
-									{{ activityElapsed(primaryActivity) }} elapsed
-								</p>
-							</div>
-						</div>
-					</div>
+									<div class="flex justify-between text-[11px] text-muted mb-1">
+										<span>{{ spotifyProgress.currentTime }}</span>
+										<span>{{ spotifyProgress.endTime }}</span>
+									</div>
 
-					<div
-						v-if="
-							discordData.data.listening_to_spotify && discordData.data.spotify
-						"
-					>
-						<div class="flex items-center gap-3 p-3 rounded-2xl bg-white/3">
-							<img
-								:src="discordData.data.spotify.album_art_url"
-								alt="Album art"
-								class="w-16 h-16 rounded-md"
-								loading="eager"
-							/>
-							<div class="flex-1">
-								<div class="flex items-center gap-2 mb-1">
-									<UIcon
-										name="i-lucide-music"
-										class="-mr-1 w-4 h-4 text-green-500"
-									/>
-									<p class="text-xs text-muted">Listening on Spotify</p>
-								</div>
-								<div class="bg-white/5 border border-white/10 rounded-md p-2">
-									<p class="text-sm font-medium text-white">
-										{{ discordData.data.spotify.song }}
-									</p>
-									<p class="text-xs text-muted">
-										by {{ discordData.data.spotify.artist }}
-									</p>
 									<div
-										v-if="spotifyProgress"
-										class="mt-2"
+										class="w-full h-1 bg-white/10 rounded-full overflow-hidden"
 									>
 										<div
-											class="flex justify-between text-[11px] text-muted mb-1"
-										>
-											<span>{{ spotifyProgress.currentTime }}</span>
-											<span>{{ spotifyProgress.endTime }}</span>
-										</div>
-
-										<div
-											class="w-full h-1 bg-white/10 rounded-full overflow-hidden"
-										>
-											<div
-												class="h-full bg-green-500 transition-all duration-500"
-												:style="{ width: spotifyProgress.percentage + '%' }"
-											/>
-										</div>
+											class="h-full bg-green-500 transition-all duration-500"
+											:style="{ width: spotifyProgress.percentage + '%' }"
+										/>
 									</div>
 								</div>
 							</div>
 						</div>
 					</div>
+				</div>
 
-					<div
-						v-for="activity in otherActivities"
-						:key="activity.id"
-						class="flex items-center gap-3 p-3 rounded-2xl bg-white/3"
-					>
-						<div class="relative shrink-0">
-							<img
-								v-if="getAssetUrl(activity, 'large')"
-								:src="getAssetUrl(activity, 'large')"
-								:alt="activity.assets?.large_text || activity.name"
-								class="w-16 h-16 rounded-md"
-								loading="eager"
-							/>
+				<div
+					v-for="activity in otherActivities"
+					:key="activity.id"
+					class="flex items-center gap-3 p-3 rounded-2xl bg-white/3"
+				>
+					<div class="relative shrink-0">
+						<img
+							v-if="getAssetUrl(activity, 'large')"
+							:src="getAssetUrl(activity, 'large')"
+							:alt="activity.assets?.large_text || activity.name"
+							class="w-16 h-16 rounded-md"
+							loading="eager"
+						/>
+						<UIcon
+							v-else
+							:name="activityIcon(activity)"
+							class="w-16 h-16 text-muted"
+						/>
+					</div>
+					<div class="flex-1">
+						<div class="flex items-center gap-2 mb-1">
 							<UIcon
-								v-else
-								:name="activityIcon(activity)"
-								class="w-16 h-16 text-muted"
+								:name="activityTypeConfig(activity).icon"
+								class="-mr-1 w-4 h-4 text-green-500"
 							/>
+							<p class="text-xs text-muted">
+								{{ activityTypeConfig(activity).text }}
+							</p>
 						</div>
-						<div class="flex-1">
-							<div class="flex items-center gap-2 mb-1">
-								<UIcon
-									:name="activityTypeConfig(activity).icon"
-									class="-mr-1 w-4 h-4 text-green-500"
-								/>
-								<p class="text-xs text-muted">
-									{{ activityTypeConfig(activity).text }}
-								</p>
-							</div>
-							<div class="bg-white/5 border border-white/10 rounded-md p-2">
-								<p class="text-sm font-medium text-white">
-									{{ activity.name }}
-								</p>
-								<p
-									v-if="activity.details"
-									class="text-xs text-muted"
-								>
-									{{ activity.details }}
-								</p>
-								<p
-									v-if="activity.state"
-									class="text-xs text-muted"
-								>
-									{{ activity.state }}
-								</p>
-							</div>
+						<div class="bg-white/5 border border-white/10 rounded-md p-2">
+							<p class="text-sm font-medium text-white">
+								{{ activity.name }}
+							</p>
+							<p
+								v-if="activity.details"
+								class="text-xs text-muted"
+							>
+								{{ activity.details }}
+							</p>
+							<p
+								v-if="activity.state"
+								class="text-xs text-muted"
+							>
+								{{ activity.state }}
+							</p>
 						</div>
 					</div>
 				</div>
 			</div>
-		</UCard>
+		</UPageCard>
 	</div>
 </template>
 
 <style scoped>
+	/* Role pill */
+	.role-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 5px 12px;
+		border-radius: 9999px;
+		background: #585858 !important; /* solid gray */
+		font-size: 12px;
+		font-weight: 500;
+		position: relative;
+		isolation: isolate;
+	}
+
+	/* Gradient border */
+	.role-badge::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		padding: 1px;
+		border-radius: inherit;
+		background: linear-gradient(45deg, var(--g1), var(--g2), var(--g1));
+		-webkit-mask: linear-gradient(#000 0 0) content-box,
+			linear-gradient(#000 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		opacity: 0.8;
+		transition: opacity 0.25s ease;
+		z-index: -1;
+	}
+
+	/* Role text — default uses first gradient color */
+	/* Base role text */
+	.role-name {
+		position: relative;
+		font-weight: 500;
+		color: var(--g1);
+	}
+
+	/* Gradient overlay */
+	.role-name::after {
+		content: attr(data-text);
+		position: absolute;
+		inset: 0;
+		background-image: linear-gradient(45deg, var(--g1), var(--g2), var(--g1));
+		background-size: 200%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		opacity: 0;
+		transition: opacity 0.25s ease;
+		pointer-events: none;
+	}
+
+	/* Hover → fade gradient in + animate */
+	.role-badge:hover .role-name::after {
+		opacity: 1;
+		animation: shimmer 1.7s linear infinite;
+	}
+
+	.role-badge:hover::before {
+		-webkit-text-fill-color: transparent;
+		opacity: 1;
+		animation: shimmer 1.7s linear infinite;
+	}
+
 	.nameplate {
 		position: absolute;
 		top: 16px;
@@ -735,7 +875,6 @@
 		overflow: hidden;
 		animation-delay: 0.2s;
 	}
-
 	.profile-effect {
 		position: absolute;
 		inset: 0;
@@ -757,7 +896,7 @@
 
 	.loop-effect {
 		opacity: 0;
-		animation: startLoop 3s ease forwards, slowFloat 8s linear infinite;
+		animation: startLoop 4.5s ease forwards, slowFloat 8s linear infinite;
 		animation-play-state: inherit;
 		z-index: 1;
 	}
