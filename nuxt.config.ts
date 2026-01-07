@@ -4,7 +4,7 @@ export default defineNuxtConfig({
 	devtools: { enabled: true },
 	modules: ['@nuxt/ui', '@nuxt/image', '@nuxt/hints', '@nuxt/eslint'],
 	css: ['~/assets/css/main.css'],
-		colorMode: {
+	colorMode: {
 		preference: 'dark',
 		fallback: 'dark',
 	},
@@ -12,6 +12,13 @@ export default defineNuxtConfig({
 	// 	preset: 'vercel',
 	// },
 	app: {
-    baseURL: '/'
-  }
+		baseURL: '/',
+		head: {
+			title: 'Ghofran565',
+			htmlAttrs: {
+				lang: 'en',
+			},
+			link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+		},
+	},
 });
